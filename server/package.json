@@ -1,0 +1,19 @@
+{
+  "name": "ukk-ai-tutor-backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend AI Tutor untuk dokumentasi UKK TKJ Paket 2 (Groq API)",
+
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "dotenv": "^17.2.0",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.4.5"
+  }
+}
