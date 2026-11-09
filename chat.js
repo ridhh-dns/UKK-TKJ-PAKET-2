@@ -219,19 +219,60 @@
     msgEl.scrollTop = msgEl.scrollHeight;
   }
 
-  function addMessage(role, text, extraHtml) {
+  function addMessage(role, text, extra) {
     if (emptyEl && emptyEl.parentNode) emptyEl.parentNode.removeChild(emptyEl);
     var wrap = document.createElement('div');
-    wrap.className = 'ai-msg ' + (role === 'user' ? 'user' : 'ai-bot' + (extraHtml && extraHtml.isError ? ' error' : ''));
-    wrap.innerHTML = '<div class="ai-bubble">' + (role === 'user' ? escapeHtml(text).replace(/\n/g, '<br>') : renderMarkdown(text)) + '</div>';
+    wrap.className = 'ai-msg ' + (role === 'user' ? 'user' : 'ai-bot' + (extra && extra.isError ? ' error' : ''));
+
+    var bubble = document.createElement('div');
+    bubble.className = 'ai-bubble';
+
+    // Jika user mengirim lampiran, render di dalam atau sebelum bubble
+    if (role === 'user' && extra && Array.isArray(extra.attachments) && extra.attachments.length > 0) {
+      var attachWrap = document.createElement('div');
+      attachWrap.className = 'ai-msg-attachments';
+      extra.attachments.forEach(function (att) {
+        if (att.isImage && att.thumbUrl) {
+          var img = document.createElement('img');
+          img.className = 'ai-msg-thumb';
+          img.src = att.thumbUrl;
+          img.alt = att.name;
+          img.title = 'Klik untuk memperbesar gambar';
+          img.addEventListener('click', function () {
+            var lightbox = document.getElementById('lightbox');
+            var lightboxImg = document.getElementById('lightbox-img');
+            var lightboxCaption = document.getElementById('lightbox-caption');
+            if (lightbox && lightboxImg) {
+              lightboxImg.src = att.thumbUrl;
+              lightboxImg.alt = att.name;
+              if (lightboxCaption) lightboxCaption.textContent = att.name + ' (' + fileSizeLabel(att.size || 0) + ')';
+              lightbox.classList.add('open');
+            }
+          });
+          attachWrap.appendChild(img);
+        } else {
+          var card = document.createElement('div');
+          card.className = 'ai-msg-filecard';
+          card.innerHTML = '<span class="kind">' + escapeHtml(att.kind) + '</span>' +
+            '<div class="meta"><span class="name" title="' + escapeHtml(att.name) + '">' + escapeHtml(att.name) + '</span>' +
+            '<span class="size">' + fileSizeLabel(att.size || 0) + '</span></div>';
+          attachWrap.appendChild(card);
+        }
+      });
+      wrap.appendChild(attachWrap);
+    }
+
+    var contentDiv = document.createElement('div');
+    contentDiv.className = 'ai-bubble-text';
+    contentDiv.innerHTML = (role === 'user' ? escapeHtml(text).replace(/\n/g, '<br>') : renderMarkdown(text));
+    bubble.appendChild(contentDiv);
+    wrap.appendChild(bubble);
+
     if (role === 'assistant') {
-      // Baris "Sumber:" dipindah ke blok .ai-sources (dihapus dari bubble)
       var m = text.match(/^Sumber:.*$/im);
       if (m) {
-        // Render ulang bubble tanpa baris sumber
-        var bubble = wrap.querySelector('.ai-bubble');
         var bodyText = text.replace(m[0], '').replace(/\n{2,}$/g, '\n');
-        bubble.innerHTML = renderMarkdown(bodyText);
+        contentDiv.innerHTML = renderMarkdown(bodyText);
         var s = document.createElement('div');
         s.className = 'ai-sources';
         s.innerHTML = renderMarkdown(m[0]).replace(/^<p>|<\/p>$/g, '');
@@ -378,32 +419,78 @@
     if (!pendingFiles.length) {
       attachBar.hidden = true;
       attachBar.innerHTML = '';
+      hideAlert();
       return;
     }
     attachBar.hidden = false;
     attachBar.innerHTML = '';
     pendingFiles.forEach(function (item, idx) {
-      var chip = document.createElement('span');
-      chip.className = 'ai-attach-chip';
+      var chip = document.createElement('div');
+      chip.className = 'ai-attach-chip' + (item.preflightOk ? '' : ' invalid');
       var kindOk = item.preflightOk;
-      chip.innerHTML = (item.thumbUrl
-        ? '<img class="ai-attach-thumb" src="' + item.thumbUrl + '" alt="">'
-        : '<span class="kind' + (kindOk ? '' : ' bad') + '">' + escapeHtml(item.kind) + '</span>') +
-        '<span class="name">' + escapeHtml(item.name) + '</span>' +
-        '<span class="size">' + fileSizeLabel(item.file.size) + '</span>' +
-        '<button type="button" class="ai-attach-remove" aria-label="Hapus lampiran">&times;</button>';
-      chip.querySelector('.ai-attach-remove').addEventListener('click', function () {
+
+      if (item.thumbUrl) {
+        var thumb = document.createElement('img');
+        thumb.className = 'ai-attach-thumb';
+        thumb.src = item.thumbUrl;
+        thumb.alt = 'Pratinjau ' + item.name;
+        thumb.title = 'Klik untuk melihat gambar lebih besar';
+        thumb.addEventListener('click', function () {
+          openAiImagePreview(item.thumbUrl, item.name, item.file.size);
+        });
+        chip.appendChild(thumb);
+      } else {
+        var badge = document.createElement('span');
+        badge.className = 'ai-attach-badge' + (kindOk ? '' : ' bad');
+        badge.textContent = item.kind;
+        chip.appendChild(badge);
+      }
+
+      var meta = document.createElement('div');
+      meta.className = 'ai-attach-meta';
+      var nameSpan = document.createElement('span');
+      nameSpan.className = 'ai-attach-name';
+      nameSpan.textContent = item.name;
+      meta.appendChild(nameSpan);
+      var sizeSpan = document.createElement('span');
+      sizeSpan.className = 'ai-attach-size';
+      sizeSpan.textContent = fileSizeLabel(item.file.size);
+      meta.appendChild(sizeSpan);
+      chip.appendChild(meta);
+
+      var removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'ai-attach-remove';
+      removeBtn.setAttribute('aria-label', 'Hapus ' + item.name);
+      removeBtn.title = 'Hapus lampiran';
+      removeBtn.innerHTML = '&times;';
+      removeBtn.addEventListener('click', function () {
         if (item.thumbUrl) { try { URL.revokeObjectURL(item.thumbUrl); } catch (e) {} }
         pendingFiles.splice(idx, 1);
         renderAttachBar();
       });
+      chip.appendChild(removeBtn);
       attachBar.appendChild(chip);
     });
-    var warn = pendingFiles.filter(function (p) { return !p.preflightOk; }).map(function (p) { return p.error; });
-    if (warn.length) {
-      showAlert(warn[0]);
+
+    var badItems = pendingFiles.filter(function (p) { return !p.preflightOk; });
+    if (badItems.length) {
+      showAlert(badItems[0].error || 'Ada lampiran yang tidak valid.');
     } else {
       hideAlert();
+    }
+  }
+
+  // Buka pratinjau gambar AI dalam lightbox global
+  function openAiImagePreview(url, name, size) {
+    var lightbox = document.getElementById('lightbox');
+    var lightboxImg = document.getElementById('lightbox-img');
+    var lightboxCaption = document.getElementById('lightbox-caption');
+    if (lightbox && lightboxImg) {
+      lightboxImg.src = url;
+      lightboxImg.alt = name || 'Pratinjau gambar';
+      if (lightboxCaption) lightboxCaption.textContent = (name || 'Pratinjau gambar') + (size ? ' (' + fileSizeLabel(size) + ')' : '');
+      lightbox.classList.add('open');
     }
   }
 
@@ -429,9 +516,7 @@
     return { ok: true, error: null };
   }
 
-  function BLOCKED_EXTENSIONS_CLIENT(ext) {
-    return ['env', 'pem', 'key', 'p12', 'pfx', 'crt', 'cer', 'der', 'jks'].indexOf(ext) !== -1;
-  }
+  var BLOCKED_EXTENSIONS_CLIENT = ['env', 'pem', 'key', 'p12', 'pfx', 'crt', 'cer', 'der', 'jks', 'keystore'];
 
   function addFilesFrom(list) {
     Array.prototype.forEach.call(list, function (file) {
@@ -456,9 +541,31 @@
   }
 
   uploadBtn.addEventListener('click', function () { fileInput.value = ''; fileInput.click(); });
-  cameraBtn.addEventListener('click', function () { cameraInput.value = ''; cameraInput.click(); });
-  fileInput.addEventListener('change', function () { addFilesFrom(fileInput.files || []); });
-  cameraInput.addEventListener('change', function () { addFilesFrom(cameraInput.files || []); });
+
+  // Kamera: gunakan input capture bila perangkat mendukung; bila tidak ada perubahan
+  // file setelah dialog (akses ditolak/tidak ada kamera), beri pemberitahuan jelas
+  // dan fallback ke pemilih file gambar biasa.
+  cameraBtn.addEventListener('click', function () {
+    cameraInput.value = '';
+    cameraInput.click();
+  });
+  fileInput.addEventListener('change', function () {
+    var files = Array.prototype.slice.call(fileInput.files || []);
+    fileInput.value = '';
+    if (files.length) addFilesFrom(files);
+  });
+  cameraInput.addEventListener('change', function () {
+    var files = Array.prototype.slice.call(cameraInput.files || []);
+    cameraInput.value = '';
+    if (files.length) {
+      addFilesFrom(files);
+    } else {
+      fileInput.accept = 'image/*';
+      fileInput.value = '';
+      fileInput.click();
+      showAlert('Foto tidak berhasil diambil (kamera tidak tersedia atau akses ditolak). Gunakan pemilih gambar sebagai alternatif.');
+    }
+  });
 
   // Seret file ke panel juga
   ['dragover', 'drop'].forEach(function (evName) {
@@ -499,21 +606,20 @@
     }
 
     clearQuickList();
-    addMessage('user', text);
 
+    // Kumpulkan metadata lampiran (sesi) sebelum clear: url pratinjau disimpan di DOM,
+    // file aslinya dikirim ke backend apa adanya (File object).
     var userAttach = pendingFiles.map(function (p) {
-      return { id: 'c' + Math.random().toString(36).slice(2), name: p.name, kind: p.kind };
+      return {
+        name: p.name,
+        kind: p.kind,
+        size: p.file.size,
+        thumbUrl: p.thumbUrl,
+        isImage: Boolean(p.thumbUrl)
+      };
     });
-    if (userAttach.length) {
-      var lastMsg = msgEl.lastElementChild;
-      var strip = document.createElement('div');
-      strip.className = 'ai-attach-strip';
-      strip.innerHTML = userAttach.map(function (a) {
-        return '<span class="ai-attach-chip-mini"><span>' + escapeHtml(a.kind) + '</span> ' + escapeHtml(a.name) + '</span>';
-      }).join('');
-      lastMsg.insertBefore(strip, lastMsg.firstChild);
-    }
 
+    addMessage('user', text, userAttach.length ? { attachments: userAttach } : null);
     history.push({ role: 'user', text: text || '(lampiran)' });
 
     var fd = new FormData();
