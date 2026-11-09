@@ -880,6 +880,29 @@ html[data-theme="dark"] .callout-warning { background: rgba(251, 191, 36, 0.08);
 
 .callout-warning strong { color: var(--warning); }
 
+/* Kotak pen marker penting (label berdiri sendiri) */
+.callout-important {
+  padding: 1rem 1.2rem 0.95rem;
+  border-left-width: 3px;
+}
+
+.callout-label {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+  margin-bottom: 0.55rem;
+  padding-bottom: 0.45rem;
+  border-bottom: 1px dashed var(--accent-border);
+}
+
+.callout-important p { margin: 0 0 0.45rem; }
+
+.callout-important p:last-child { margin-bottom: 0; }
+
 /* === Workgroup caption (kelompok pekerjaan) === */
 .workgroup {
   display: block;

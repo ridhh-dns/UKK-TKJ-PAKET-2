@@ -118,7 +118,7 @@
     <div class="doc-header">
       <p class="doc-eyebrow">Technical Documentation &middot; UKK TKJ</p>
       <h1>Merancang Arsitektur, Layanan, Perangkat Lunak dan Sarana pada Jaringan Private Cloud</h1>
-      <p class="page-lead">Panduan teknis dan implementasi langkah demi langkah Uji Kompetensi Keahlian (UKK) Teknik Komputer dan Jaringan Paket 2.</p>
+      <p class="page-lead">Panduan pengerjaan Uji Kompetensi Keahlian (UKK) Teknik Komputer dan Jaringan — Paket 2. Tahapan disusun berurutan mengikuti ketergantungan antar layanan, mulai dari jaringan router sampai pencadangan otomatis.</p>
     </div>
 
     <div class="hero-meta" aria-label="Ringkasan cakupan panduan">
@@ -147,8 +147,8 @@
     <!-- Technical Reference & Topology Card -->
     <section class="spec-card">
       <div class="spec-card-header">
-        <div class="spec-card-title">Matriks Topologi &amp; Alokasi Pengalamatan Jaringan</div>
-        <span class="spec-card-badge">Spesifikasi Ujian</span>
+        <div class="spec-card-title">Rancangan Koneksi dan Pembagian Alamat Perangkat</div>
+        <span class="spec-card-badge">Acuan Pelaksanaan Praktik UKK</span>
       </div>
       <div class="topology-table-wrap">
         <table class="topology-table">
@@ -207,8 +207,10 @@
           </tbody>
         </table>
       </div>
-      <div class="callout callout-info">
-        <strong>PENTING:</strong> Ganti variabel <code>xx</code> pada alamat IP dan nama mesin dengan nomor meja / nomor absen ujian Anda (contoh: bila nomor meja <strong>14</strong>, maka IP ether1 adalah <code>10.10.10.14/24</code>).
+      <div class="callout callout-important">
+        <span class="callout-label">Sebelum Memulai Konfigurasi</span>
+        <p>Setiap penanda <code>xx</code> yang terdapat pada alamat IP maupun nama host harus disesuaikan dengan <strong>nomor meja</strong> atau <strong>nomor absen</strong> peserta. Sebagai ilustrasi, peserta dengan nomor <strong>14</strong> menggunakan <code>10.10.10.14/24</code> sebagai alamat pada interface <strong>ether1</strong>.</p>
+        <p>Gunakan nomor peserta yang sama secara konsisten pada seluruh konfigurasi lain yang memuat penanda tersebut.</p>
       </div>
     </section>
 
@@ -1605,7 +1607,7 @@ chmod -R 755 /var/www/html</code></pre>
       <h2 class="ai-empty-title">Halo! Saya AI Tutor UKK TKJ.</h2>
       <p class="ai-empty-desc">Saya siap membantu memahami dokumentasi, mengerjakan konfigurasi Debian, dan menganalisis kendala praktik Anda.</p>
       <div class="ai-quick-list" id="ai-quick-list"></div>
-      <p class="ai-privacy-note">Pesan dan lampiran Anda diproses melalui Groq API dan tunduk pada kebijakan data Groq. Jangan kirim password, API key, private key, atau informasi rahasia.</p>
+      <p class="ai-privacy-note">Jika layanan AI Tutor sedang tidak aktif, server milik Ridho Arfa Ardi Permana mungkin sedang dimatikan atau tidak terhubung ke internet.</p>
     </div>
   </div>
 
