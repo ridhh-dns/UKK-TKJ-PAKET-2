@@ -61,7 +61,10 @@
   var history = [];         // {role:'user'|'assistant', text}
   var pendingFiles = [];    // File di memori hanya sesi kirim berjalan
   var sending = false;
-  var apiBase = null;       // null = belum resolve
+  // Konfigurasi API Base untuk Production (GitHub Pages -> Tailscale Funnel) & Development Lokal
+    // Production: https://desktop.tail8766df.ts.net/ukk-api
+    // Local / Default: otomatis mendeteksi port 3001 atau localhost:3001
+    var apiBase = window.AI_API_BASE || null;
   var serviceReady = null;  // tri-state: null/belum, true, false
   var modelLabel = '';
 
@@ -310,6 +313,9 @@
     var list = [];
     if (window.AI_API_BASE) {
       list.push(String(window.AI_API_BASE).replace(/\/+$/, ''));
+    }
+    if (window.location.hostname === 'ridhh-dns.github.io') {
+      list.push('https://desktop.tail8766df.ts.net/ukk-api');
     }
     if (window.location.port === '3001') {
       list.push('');

@@ -19,7 +19,7 @@ export const config = {
   groqBaseUrl: (process.env.GROQ_BASE_URL || 'https://api.groq.com/openai/v1').replace(/\/+$/, ''),
 
   // Origin yang diizinkan dipisah koma. Kosong = hanya localhost/127.0.0.1 + same origin.
-  allowedOrigins: (process.env.ALLOWED_ORIGINS || '')
+  allowedOrigins: (process.env.ALLOWED_ORIGINS || 'https://ridhh-dns.github.io')
     .split(',')
     .map((s) => s.trim())
     .filter(Boolean),

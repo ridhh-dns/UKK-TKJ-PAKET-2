@@ -38,8 +38,8 @@ app.use(express.json({ limit: '1mb' }));
 // ================== CORS ==================
 function corsMiddleware(req, res, next) {
   const origin = req.headers.origin || '';
-  const localhost = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
-  const allowed = config.allowedOrigins.includes(origin) || (config.allowedOrigins.length === 0 && localhost);
+  const isLocal = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+  const allowed = config.allowedOrigins.includes(origin) || isLocal;
   if (allowed) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Vary', 'Origin');
