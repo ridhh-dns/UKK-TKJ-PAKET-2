@@ -18,84 +18,28 @@ document.addEventListener('click', function (e) {
 });
 
 // ==========================================
-// 2. Lightbox Slideshow with Prev/Next & Keyboard
+// 2. Lightbox (pratinjau lampiran AI Tutor)
+//    Tutup via tombol close, klik latar, atau Escape.
 // ==========================================
 var lightbox = document.getElementById('lightbox');
-var lightboxImg = document.getElementById('lightbox-img');
-var lightboxCaption = document.getElementById('lightbox-caption');
-var btnPrev = document.querySelector('.lightbox-prev');
-var btnNext = document.querySelector('.lightbox-next');
-var btnClose = document.querySelector('.lightbox-close');
-
-var allFigures = Array.from(document.querySelectorAll('figure img'));
-var currentImgIndex = -1;
-
-function showLightboxImage(index) {
-  if (index < 0) index = allFigures.length - 1;
-  if (index >= allFigures.length) index = 0;
-  currentImgIndex = index;
-
-  var targetImg = allFigures[currentImgIndex];
-  lightboxImg.src = targetImg.src;
-  lightboxImg.alt = targetImg.alt || '';
-
-  var stepContainer = targetImg.closest('.step');
-  var stepText = '';
-  if (stepContainer) {
-    var p = stepContainer.querySelector('p');
-    if (p) stepText = p.textContent.trim();
-  }
-  var captionText = targetImg.alt || stepText || '';
-  lightboxCaption.textContent = '[' + (currentImgIndex + 1) + ' / ' + allFigures.length + '] ' + captionText;
-  lightbox.classList.add('open');
-}
-
-document.addEventListener('click', function (e) {
-  if (e.target.matches('figure img')) {
-    var idx = allFigures.indexOf(e.target);
-    if (idx !== -1) showLightboxImage(idx);
-  }
-});
-
-if (btnPrev) {
-  btnPrev.addEventListener('click', function (e) {
-    e.stopPropagation();
-    showLightboxImage(currentImgIndex - 1);
-  });
-}
-
-if (btnNext) {
-  btnNext.addEventListener('click', function (e) {
-    e.stopPropagation();
-    showLightboxImage(currentImgIndex + 1);
-  });
-}
-
-if (btnClose) {
-  btnClose.addEventListener('click', function (e) {
-    e.stopPropagation();
-    lightbox.classList.remove('open');
-  });
-}
 
 if (lightbox) {
   lightbox.addEventListener('click', function (e) {
-    if (e.target === lightbox || e.target.classList.contains('lightbox-content')) {
+    if (
+      e.target === lightbox ||
+      e.target.classList.contains('lightbox-content') ||
+      e.target.closest('.lightbox-close')
+    ) {
+      lightbox.classList.remove('open');
+    }
+  });
+
+  document.addEventListener('keydown', function (e) {
+    if (lightbox.classList.contains('open') && e.key === 'Escape') {
       lightbox.classList.remove('open');
     }
   });
 }
-
-document.addEventListener('keydown', function (e) {
-  if (!lightbox || !lightbox.classList.contains('open')) return;
-  if (e.key === 'Escape') {
-    lightbox.classList.remove('open');
-  } else if (e.key === 'ArrowLeft') {
-    showLightboxImage(currentImgIndex - 1);
-  } else if (e.key === 'ArrowRight') {
-    showLightboxImage(currentImgIndex + 1);
-  }
-});
 
 // ==========================================
 // 3. Reading Progress Bar & Back to Top
@@ -368,7 +312,7 @@ window.addEventListener('resize', function () {
 
 
 // ==========================================
-// 7. Theme Toggle (light/dark, persisted)
+// 8. Theme Toggle (light/dark, persisted)
 // ==========================================
 
 var rootElement = document.documentElement;
